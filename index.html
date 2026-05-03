@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AppZone – Télécharge tes Apps & Jeux</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;900&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c14;
+    --surface: #111422;
+    --card: #161928;
+    --border: #1e2340;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --green: #00e676;
+    --text: #e8eaf6;
+    --muted: #7986cb;
+    --red: #ff1744;
+    --yellow: #ffd740;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* BG animated */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 20% 20%, rgba(124,58,237,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(0,229,255,0.06) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+    animation: bgPulse 10s ease-in-out infinite alternate;
+  }
+  @keyframes bgPulse {
+    0% { transform: scale(1) rotate(0deg); }
+    100% { transform: scale(1.1) rotate(3deg); }
+  }
+ 
+  /* HEADER */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,12,20,0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .logo {
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 900; font-size: 1.5rem;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+  }
+  .device-badge {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .device-badge span { color: var(--accent); font-weight: 600; }
+ 
+  /* HERO */
+  .hero {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 60px 20px 40px;
+  }
+  .hero h1 {
+    font-family: 'Exo 2', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.8rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .hero h1 em {
+    font-style: normal;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero p {
+    color: var(--muted);
+    font-size: clamp(0.95rem, 2vw, 1.1rem);
+    max-width: 540px; margin: 0 auto 32px;
+  }
+  .hero-stores {
+    display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+  }
+  .store-pill {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 0.85rem; font-weight: 600;
+    cursor: default;
+    border: 1px solid;
+  }
+  .pill-android { border-color: #00e676; color: #00e676; background: rgba(0,230,118,0.08); }
+  .pill-ios { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.08); }
+  .pill-pc { border-color: var(--accent2); color: #a78bfa; background: rgba(124,58,237,0.08); }
+ 
+  /* SEARCH */
+  .search-wrap {
+    position: relative; z-index: 1;
+    max-width: 560px; margin: 0 auto 48px;
+    padding: 0 20px;
+  }
+  .search-wrap input {
+    width: 100%; padding: 14px 50px 14px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .search-icon {
+    position: absolute; right: 34px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted); font-size: 1.1rem; pointer-events: none;
+  }
+ 
+  /* CATEGORIES */
+  .categories {
+    position: relative; z-index: 1;
+    display: flex; flex-wrap: wrap; gap: 8px;
+    justify-content: center;
+    padding: 0 20px 36px;
+  }
+  .cat-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.85rem; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .cat-btn:hover, .cat-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,229,255,0.07);
+  }
+ 
+  /* SECTION */
+  .section {
+    position: relative; z-index: 1;
+    max-width: 1400px; margin: 0 auto 56px;
+    padding: 0 20px;
+  }
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .section-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 1.35rem; font-weight: 700;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title .icon { font-size: 1.5rem; }
+ 
+  /* GRID */
+  .apps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+ 
+  /* APP CARD */
+  .app-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 16px 16px;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    cursor: default;
+  }
+  .app-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: 0 8px 32px rgba(0,229,255,0.1);
+  }
+  .app-icon {
+    width: 76px; height: 76px;
+    border-radius: 18px;
+    margin-bottom: 14px;
+    object-fit: cover;
+    background: var(--surface);
+  }
+  .app-name {
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 700; font-size: 0.95rem;
+    margin-bottom: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    width: 100%;
+  }
+  .app-category {
+    font-size: 0.75rem; color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .app-rating {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 0.8rem; color: var(--yellow);
+    margin-bottom: 12px;
+  }
+  .app-size {
+    font-size: 0.72rem; color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .btn-dl {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 700; font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-android {
+    background: linear-gradient(135deg, #00e676, #00b248);
+    color: #003300;
+  }
+  .btn-android:hover { filter: brightness(1.1); transform: scale(1.02); }
+  .btn-ios {
+    background: linear-gradient(135deg, #00e5ff, #0077cc);
+    color: #003344;
+  }
+  .btn-ios:hover { filter: brightness(1.1); transform: scale(1.02); }
+  .btn-pc {
+    background: linear-gradient(135deg, #7c3aed, #4c1d95);
+    color: white;
+  }
+  .btn-pc:hover { filter: brightness(1.2); transform: scale(1.02); }
+  .btn-multi {
+    background: linear-gradient(135deg, #ff6d00, #e65100);
+    color: white;
+  }
+  .btn-multi:hover { filter: brightness(1.1); transform: scale(1.02); }
+ 
+  /* BADGE */
+  .badge {
+    display: inline-block;
+    font-size: 0.65rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 6px;
+    margin-left: 8px; vertical-align: middle;
+  }
+  .badge-new { background: var(--green); color: #003300; }
+  .badge-hot { background: var(--red); color: white; }
+  .badge-top { background: var(--yellow); color: #333; }
+ 
+  /* BANNER */
+  .featured-banner {
+    position: relative; z-index: 1;
+    max-width: 1400px; margin: 0 auto 48px;
+    padding: 0 20px;
+  }
+  .banner-inner {
+    background: linear-gradient(135deg, #1a0533, #0a1a33);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 24px;
+    overflow: hidden;
+    position: relative;
+  }
+  .banner-inner::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(0,229,255,0.15), transparent 70%);
+    pointer-events: none;
+  }
+  .banner-text h2 {
+    font-family: 'Exo 2', sans-serif;
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 900; margin-bottom: 8px;
+  }
+  .banner-text p { color: var(--muted); font-size: 0.95rem; }
+  .banner-apps {
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .banner-app-icon {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+  }
+ 
+  /* FOOTER */
+  footer {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 32px 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted); font-size: 0.8rem;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+ 
+  /* SCROLL TO TOP */
+  #scrollTop {
+    position: fixed; bottom: 24px; right: 24px; z-index: 200;
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--accent);
+    border: none; color: #001122;
+    font-size: 1.2rem; cursor: pointer;
+    display: none; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,229,255,0.4);
+    transition: opacity 0.2s;
+  }
+  #scrollTop:hover { background: #26f4ff; }
+ 
+  /* TOAST */
+  #toast {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: var(--surface); border: 1px solid var(--accent);
+    color: var(--text); padding: 12px 24px;
+    border-radius: 12px; font-size: 0.9rem;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 300; white-space: nowrap;
+  }
+  #toast.show { opacity: 1; }
+ 
+  /* NO RESULTS */
+  .no-results {
+    text-align: center; padding: 48px 20px;
+    color: var(--muted); font-size: 1rem;
+    display: none;
+  }
+ 
+  @media (max-width: 600px) {
+    .apps-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .banner-inner { padding: 24px 20px; }
+    header { padding: 0 14px; }
+    .logo { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+ 
+<!-- HEADER -->
+<header>
+  <div class="logo">⚡ AppZone</div>
+  <div class="device-badge" id="deviceBadge">
+    📱 Appareil : <span id="deviceName">Détection...</span>
+  </div>
+</header>
+ 
+<!-- HERO -->
+<section class="hero">
+  <h1>Télécharge les meilleures<br><em>Apps & Jeux</em> gratuitement</h1>
+  <p>Redirection automatique vers le bon store selon ton appareil — Play Store, App Store ou Malavida.</p>
+  <div class="hero-stores">
+    <div class="store-pill pill-android">▶ Play Store (Android)</div>
+    <div class="store-pill pill-ios"> App Store (iPhone)</div>
+    <div class="store-pill pill-pc">🖥️ Malavida (PC)</div>
+  </div>
+</section>
+ 
+<!-- SEARCH -->
+<div class="search-wrap">
+  <input type="text" id="searchInput" placeholder="Rechercher une app ou un jeu..." oninput="filterApps()">
+  <span class="search-icon">🔍</span>
+</div>
+ 
+<!-- CATEGORIES -->
+<div class="categories" id="catButtons">
+  <button class="cat-btn active" onclick="filterCat('all', this)">Tout</button>
+  <button class="cat-btn" onclick="filterCat('social', this)">💬 Social</button>
+  <button class="cat-btn" onclick="filterCat('jeu', this)">🎮 Jeux</button>
+  <button class="cat-btn" onclick="filterCat('video', this)">▶️ Vidéo</button>
+  <button class="cat-btn" onclick="filterCat('musique', this)">🎵 Musique</button>
+  <button class="cat-btn" onclick="filterCat('utilitaire', this)">🔧 Utilitaires</button>
+  <button class="cat-btn" onclick="filterCat('education', this)">📚 Éducation</button>
+</div>
+ 
+<!-- FEATURED BANNER -->
+<div class="featured-banner">
+  <div class="banner-inner">
+    <div class="banner-text">
+      <h2>🔥 Applications Tendances</h2>
+      <p>Les plus téléchargées cette semaine</p>
+    </div>
+    <div class="banner-apps">
+      <img class="banner-app-icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/240px-WhatsApp.svg.png" alt="WhatsApp">
+      <img class="banner-app-icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/TikTok_logo.svg/240px-TikTok_logo.svg.png" alt="TikTok">
+      <img class="banner-app-icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/240px-Instagram_logo_2016.svg.png" alt="Instagram">
+      <img class="banner-app-icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Freefire_logo.png/240px-Freefire_logo.png" alt="Free Fire" onerror="this.src='https://placehold.co/56x56/111422/00e5ff?text=FF'">
+    </div>
+  </div>
+</div>
+ 
+<!-- APPS SECTION -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">
+      <span class="icon">📱</span> Toutes les Applications
+    </div>
+    <span id="countBadge" style="color:var(--muted);font-size:0.85rem;"></span>
+  </div>
+ 
+  <div class="no-results" id="noResults">😕 Aucun résultat trouvé. Essaie un autre mot.</div>
+ 
+  <div class="apps-grid" id="appsGrid"></div>
+</div>
+ 
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 AppZone — Redirection automatique vers <a href="https://play.google.com" target="_blank">Play Store</a>, <a href="https://apps.apple.com" target="_blank">App Store</a> ou <a href="https://www.malavida.com" target="_blank">Malavida</a></p>
+  <p style="margin-top:8px;">Ce site ne stocke aucun fichier. Toutes les redirections pointent vers les stores officiels.</p>
+</footer>
+ 
+<button id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<div id="toast"></div>
+ 
+<script>
+// =====================
+// DEVICE DETECTION
+// =====================
+function detectDevice() {
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+  if (/android/i.test(ua)) return 'android';
+  if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) return 'ios';
+  return 'pc';
+}
+ 
+const DEVICE = detectDevice();
+const deviceLabel = { android: '🤖 Android', ios: ' iPhone/iPad', pc: '🖥️ PC/Mac' };
+document.getElementById('deviceName').textContent = deviceLabel[DEVICE];
+ 
+// =====================
+// APPS DATABASE
+// =====================
+const APPS = [
+  // SOCIAL
+  {
+    name: 'WhatsApp',
+    category: 'social',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/240px-WhatsApp.svg.png',
+    rating: 4.4, size: '30 MB', badge: 'top',
+    android: 'https://play.google.com/store/apps/details?id=com.whatsapp',
+    ios: 'https://apps.apple.com/app/whatsapp-messenger/id310633997',
+    pc: 'https://www.malavida.com/fr/soft/whatsapp/'
+  },
+  {
+    name: 'Facebook',
+    category: 'social',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/240px-2023_Facebook_icon.svg.png',
+    rating: 3.8, size: '60 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=com.facebook.katana',
+    ios: 'https://apps.apple.com/app/facebook/id284882215',
+    pc: 'https://www.malavida.com/fr/soft/facebook/'
+  },
+  {
+    name: 'Instagram',
+    category: 'social',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/240px-Instagram_logo_2016.svg.png',
+    rating: 4.3, size: '35 MB', badge: 'hot',
+    android: 'https://play.google.com/store/apps/details?id=com.instagram.android',
+    ios: 'https://apps.apple.com/app/instagram/id389801252',
+    pc: 'https://www.malavida.com/fr/soft/instagram/'
+  },
+  {
+    name: 'Telegram',
+    category: 'social',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/240px-Telegram_logo.svg.png',
+    rating: 4.5, size: '25 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=org.telegram.messenger',
+    ios: 'https://apps.apple.com/app/telegram-messenger/id686449807',
+    pc: 'https://www.malavida.com/fr/soft/telegram/'
+  },
+  {
+    name: 'TikTok',
+    category: 'social',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/TikTok_logo.svg/240px-TikTok_logo.svg.png',
+    rating: 4.4, size: '80 MB', badge: 'hot',
+    android: 'https://play.google.com/store/apps/details?id=com.zhiliaoapp.musically',
+    ios: 'https://apps.apple.com/app/tiktok/id835599320',
+    pc: 'https://www.malavida.com/fr/soft/tiktok/'
+  },
+  {
+    name: 'Snapchat',
+    category: 'social',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Snapchat_logo.png/240px-Snapchat_logo.png',
+    rating: 4.1, size: '50 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=com.snapchat.android',
+    ios: 'https://apps.apple.com/app/snapchat/id447188370',
+    pc: 'https://www.malavida.com/fr/soft/snapchat/'
+  },
+  {
+    name: 'Twitter / X',
+    category: 'social',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/X_logo_2023_%28white%29.png/240px-X_logo_2023_%28white%29.png',
+    rating: 3.9, size: '40 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=com.twitter.android',
+    ios: 'https://apps.apple.com/app/x/id333903271',
+    pc: 'https://www.malavida.com/fr/soft/twitter/'
+  },
+  {
+    name: 'LinkedIn',
+    category: 'social',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/LinkedIn_logo_initials.png/240px-LinkedIn_logo_initials.png',
+    rating: 4.2, size: '45 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=com.linkedin.android',
+    ios: 'https://apps.apple.com/app/linkedin/id288429040',
+    pc: 'https://www.malavida.com/fr/soft/linkedin/'
+  },
+ 
+  // JEUX
+  {
+    name: 'Free Fire',
+    category: 'jeu',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Freefire_logo.png/240px-Freefire_logo.png',
+    rating: 4.2, size: '700 MB', badge: 'hot',
+    android: 'https://play.google.com/store/apps/details?id=com.dts.freefireth',
+    ios: 'https://apps.apple.com/app/garena-free-fire/id1300146617',
+    pc: 'https://www.malavida.com/fr/soft/free-fire/'
+  },
+  {
+    name: 'Granny',
+    category: 'jeu',
+    icon: 'https://play-lh.googleusercontent.com/AiusKWRG-vQfvBi1YqZ0FbKdZr7rcIpIi7Y8LB7Rg-Kl2WXlcJjlFSBl0Ak6SkHyg=s256',
+    rating: 4.1, size: '80 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=dvloper.granny',
+    ios: 'https://apps.apple.com/app/granny/id1355290816',
+    pc: 'https://www.malavida.com/fr/soft/granny/'
+  },
+  {
+    name: 'PUBG Mobile',
+    category: 'jeu',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/PUBG_Mobile_logo.png/240px-PUBG_Mobile_logo.png',
+    rating: 4.0, size: '800 MB', badge: 'top',
+    android: 'https://play.google.com/store/apps/details?id=com.tencent.ig',
+    ios: 'https://apps.apple.com/app/pubg-mobile/id1330123889',
+    pc: 'https://www.malavida.com/fr/soft/pubg-mobile/'
+  },
+  {
+    name: 'Minecraft',
+    category: 'jeu',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Minecraft_cover.png/240px-Minecraft_cover.png',
+    rating: 4.5, size: '150 MB', badge: 'top',
+    android: 'https://play.google.com/store/apps/details?id=com.mojang.minecraftpe',
+    ios: 'https://apps.apple.com/app/minecraft/id479516143',
+    pc: 'https://www.malavida.com/fr/soft/minecraft/'
+  },
+  {
+    name: 'Roblox',
+    category: 'jeu',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Roblox_player_icon_black.svg/240px-Roblox_player_icon_black.svg.png',
+    rating: 4.3, size: '120 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=com.roblox.client',
+    ios: 'https://apps.apple.com/app/roblox/id431946152',
+    pc: 'https://www.malavida.com/fr/soft/roblox/'
+  },
+  {
+    name: 'Clash of Clans',
+    category: 'jeu',
+    icon: 'https://upload.wikimedia.org/wikipedia/en/thumb/2/20/Clash_of_Clans_2022_Logo.png/240px-Clash_of_Clans_2022_Logo.png',
+    rating: 4.6, size: '200 MB', badge: 'top',
+    android: 'https://play.google.com/store/apps/details?id=com.supercell.clashofclans',
+    ios: 'https://apps.apple.com/app/clash-of-clans/id529479190',
+    pc: 'https://www.malavida.com/fr/soft/clash-of-clans/'
+  },
+  {
+    name: 'Among Us',
+    category: 'jeu',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Innersloth_Logo.png/240px-Innersloth_Logo.png',
+    rating: 3.9, size: '100 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=com.innersloth.spacemafia',
+    ios: 'https://apps.apple.com/app/among-us/id1351168404',
+    pc: 'https://www.malavida.com/fr/soft/among-us/'
+  },
+  {
+    name: 'Subway Surfers',
+    category: 'jeu',
+    icon: 'https://upload.wikimedia.org/wikipedia/en/thumb/9/90/Subway_Surfers.png/240px-Subway_Surfers.png',
+    rating: 4.4, size: '90 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=com.kiloo.subwaysurf',
+    ios: 'https://apps.apple.com/app/subway-surfers/id512939461',
+    pc: 'https://www.malavida.com/fr/soft/subway-surfers/'
+  },
+  {
+    name: 'Candy Crush',
+    category: 'jeu',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Candy_Crush_logo.png/240px-Candy_Crush_logo.png',
+    rating: 4.3, size: '75 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=com.king.candycrushsaga',
+    ios: 'https://apps.apple.com/app/candy-crush-saga/id553834731',
+    pc: 'https://www.malavida.com/fr/soft/candy-crush-saga/'
+  },
+  {
+    name: 'GTA Vice City',
+    category: 'jeu',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/GTA-VC-Mobile-Icon.png/240px-GTA-VC-Mobile-Icon.png',
+    rating: 4.4, size: '1.5 GB', badge: 'top',
+    android: 'https://play.google.com/store/apps/details?id=com.rockstargames.gtavc',
+    ios: 'https://apps.apple.com/app/grand-theft-auto-vice-city/id578448682',
+    pc: 'https://www.malavida.com/fr/soft/gta-vice-city/'
+  },
+  {
+    name: 'Temple Run 2',
+    category: 'jeu',
+    icon: 'https://play-lh.googleusercontent.com/bA5HHLfGO8dOq7UVSqr96tFWHF_mf0pVfVrqOvZzGVOhAXjF-TidaVXiO04LYuUBaQ=s256',
+    rating: 4.3, size: '60 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=com.imangi.templerun2',
+    ios: 'https://apps.apple.com/app/temple-run-2/id572395608',
+    pc: 'https://www.malavida.com/fr/soft/temple-run-2/'
+  },
+  {
+    name: '8 Ball Pool',
+    category: 'jeu',
+    icon: 'https://play-lh.googleusercontent.com/a7HoV6-R8prMNQGrw_lLxF-WP9gH8JXqQ7R9nBpH3P1m6bWBbN5uqJJZJhDIeVCKBA=s256',
+    rating: 4.5, size: '70 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=com.miniclip.eightballpool',
+    ios: 'https://apps.apple.com/app/8-ball-pool/id543186831',
+    pc: 'https://www.malavida.com/fr/soft/8-ball-pool/'
+  },
+  {
+    name: 'Stumble Guys',
+    category: 'jeu',
+    icon: 'https://play-lh.googleusercontent.com/v22LFbqhGfDqCQ_nECJRH7OijbYCFjQNqO3G2aJi_7fJmhFRxTBExsW9KFv5NknxGg=s256',
+    rating: 4.2, size: '150 MB', badge: 'new',
+    android: 'https://play.google.com/store/apps/details?id=com.kitka.stumbleguys',
+    ios: 'https://apps.apple.com/app/stumble-guys/id1468544865',
+    pc: 'https://www.malavida.com/fr/soft/stumble-guys/'
+  },
+  {
+    name: 'Mobile Legends',
+    category: 'jeu',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Mobile_Legends_logo.png/240px-Mobile_Legends_logo.png',
+    rating: 4.2, size: '250 MB', badge: 'hot',
+    android: 'https://play.google.com/store/apps/details?id=com.mobile.legends',
+    ios: 'https://apps.apple.com/app/mobile-legends-bang-bang/id1160056295',
+    pc: 'https://www.malavida.com/fr/soft/mobile-legends-bang-bang/'
+  },
+ 
+  // VIDEO
+  {
+    name: 'YouTube',
+    category: 'video',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/YouTube_Logo_2017.svg/240px-YouTube_Logo_2017.svg.png',
+    rating: 4.3, size: '40 MB', badge: 'top',
+    android: 'https://play.google.com/store/apps/details?id=com.google.android.youtube',
+    ios: 'https://apps.apple.com/app/youtube-watch-listen-stream/id544007664',
+    pc: 'https://www.malavida.com/fr/soft/youtube/'
+  },
+  {
+    name: 'Netflix',
+    category: 'video',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/240px-Netflix_2015_logo.svg.png',
+    rating: 4.4, size: '50 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=com.netflix.mediaclient',
+    ios: 'https://apps.apple.com/app/netflix/id363590051',
+    pc: 'https://www.malavida.com/fr/soft/netflix/'
+  },
+  {
+    name: 'VLC',
+    category: 'video',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/VLC_Icon.svg/240px-VLC_Icon.svg.png',
+    rating: 4.5, size: '25 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=org.videolan.vlc',
+    ios: 'https://apps.apple.com/app/vlc-for-mobile/id650377962',
+    pc: 'https://www.malavida.com/fr/soft/vlc-media-player/'
+  },
+  {
+    name: 'CapCut',
+    category: 'video',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Capcut-logo.png/240px-Capcut-logo.png',
+    rating: 4.6, size: '200 MB', badge: 'hot',
+    android: 'https://play.google.com/store/apps/details?id=com.lemon.lvoverseas',
+    ios: 'https://apps.apple.com/app/capcut-video-editor/id1500855883',
+    pc: 'https://www.malavida.com/fr/soft/capcut/'
+  },
+ 
+  // MUSIQUE
+  {
+    name: 'Spotify',
+    category: 'musique',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/240px-Spotify_logo_without_text.svg.png',
+    rating: 4.5, size: '30 MB', badge: 'top',
+    android: 'https://play.google.com/store/apps/details?id=com.spotify.music',
+    ios: 'https://apps.apple.com/app/spotify-music-and-podcasts/id324684580',
+    pc: 'https://www.malavida.com/fr/soft/spotify/'
+  },
+  {
+    name: 'Shazam',
+    category: 'musique',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Shazam_logo.png/240px-Shazam_logo.png',
+    rating: 4.7, size: '40 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=com.shazam.android',
+    ios: 'https://apps.apple.com/app/shazam-find-music-concerts/id284993459',
+    pc: 'https://www.malavida.com/fr/soft/shazam/'
+  },
+  {
+    name: 'SoundCloud',
+    category: 'musique',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Antu_soundcloud.svg/240px-Antu_soundcloud.svg.png',
+    rating: 4.2, size: '30 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=com.soundcloud.android',
+    ios: 'https://apps.apple.com/app/soundcloud-music-audio/id336353151',
+    pc: 'https://www.malavida.com/fr/soft/soundcloud/'
+  },
+ 
+  // UTILITAIRES
+  {
+    name: 'Google Chrome',
+    category: 'utilitaire',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Google_Chrome_icon_%28February_2022%29.svg/240px-Google_Chrome_icon_%28February_2022%29.svg.png',
+    rating: 4.3, size: '70 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=com.android.chrome',
+    ios: 'https://apps.apple.com/app/google-chrome/id535886823',
+    pc: 'https://www.malavida.com/fr/soft/google-chrome/'
+  },
+  {
+    name: 'Google Maps',
+    category: 'utilitaire',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Google_Maps_Logo_2020.svg/240px-Google_Maps_Logo_2020.svg.png',
+    rating: 4.5, size: '100 MB', badge: 'top',
+    android: 'https://play.google.com/store/apps/details?id=com.google.android.apps.maps',
+    ios: 'https://apps.apple.com/app/google-maps-transit-food/id585027354',
+    pc: 'https://www.malavida.com/fr/soft/google-maps/'
+  },
+  {
+    name: 'Clean Master',
+    category: 'utilitaire',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/CM_Security_icon.png/240px-CM_Security_icon.png',
+    rating: 4.1, size: '40 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=com.cleanmaster.mguard',
+    ios: 'https://apps.apple.com/app/clean-master-remove-junk-files/id1112997822',
+    pc: 'https://www.malavida.com/fr/soft/clean-master/'
+  },
+  {
+    name: 'WinRAR / ZArchiver',
+    category: 'utilitaire',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/WinRAR_logo.png/240px-WinRAR_logo.png',
+    rating: 4.4, size: '10 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=ru.zdevs.zarchiver',
+    ios: 'https://apps.apple.com/app/izip-zip-unzip-unrar-tool/id413971331',
+    pc: 'https://www.malavida.com/fr/soft/winrar/'
+  },
+  {
+    name: 'Microsoft Word',
+    category: 'utilitaire',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Microsoft_Office_Word_%282019%E2%80%93present%29.svg/240px-Microsoft_Office_Word_%282019%E2%80%93present%29.svg.png',
+    rating: 4.5, size: '150 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=com.microsoft.office.word',
+    ios: 'https://apps.apple.com/app/microsoft-word/id586447913',
+    pc: 'https://www.malavida.com/fr/soft/microsoft-word/'
+  },
+  {
+    name: 'Zoom',
+    category: 'utilitaire',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Zoom_Logo_2022.svg/240px-Zoom_Logo_2022.svg.png',
+    rating: 4.2, size: '60 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=us.zoom.videomeetings',
+    ios: 'https://apps.apple.com/app/zoom-one-platform-to-connect/id546505307',
+    pc: 'https://www.malavida.com/fr/soft/zoom/'
+  },
+ 
+  // EDUCATION
+  {
+    name: 'Duolingo',
+    category: 'education',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Duolingo_App_Icon.png/240px-Duolingo_App_Icon.png',
+    rating: 4.7, size: '35 MB', badge: 'top',
+    android: 'https://play.google.com/store/apps/details?id=com.duolingo',
+    ios: 'https://apps.apple.com/app/duolingo-learn-languages-fast/id570060128',
+    pc: 'https://www.malavida.com/fr/soft/duolingo/'
+  },
+  {
+    name: 'Khan Academy',
+    category: 'education',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/KhanAcademy_logo_colored.png/240px-KhanAcademy_logo_colored.png',
+    rating: 4.6, size: '25 MB', badge: '',
+    android: 'https://play.google.com/store/apps/details?id=org.khanacademy.android',
+    ios: 'https://apps.apple.com/app/khan-academy/id469863705',
+    pc: 'https://www.malavida.com/fr/soft/khan-academy/'
+  },
+  {
+    name: 'Photomath',
+    category: 'education',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Photomath_logo.png/240px-Photomath_logo.png',
+    rating: 4.6, size: '80 MB', badge: 'new',
+    android: 'https://play.google.com/store/apps/details?id=com.microblink.photomath',
+    ios: 'https://apps.apple.com/app/photomath/id919087726',
+    pc: 'https://www.malavida.com/fr/soft/photomath/'
+  }
+];
+ 
+// =====================
+// RENDER
+// =====================
+let currentCat = 'all';
+let currentSearch = '';
+ 
+function getStoreLink(app) {
+  return app[DEVICE] || app.android;
+}
+ 
+function getStoreName() {
+  if (DEVICE === 'android') return '▶ Play Store';
+  if (DEVICE === 'ios') return ' App Store';
+  return '🖥️ Malavida';
+}
+ 
+function getBtnClass() {
+  if (DEVICE === 'android') return 'btn-android';
+  if (DEVICE === 'ios') return 'btn-ios';
+  return 'btn-pc';
+}
+ 
+function getBadgeHTML(badge) {
+  if (!badge) return '';
+  const map = { hot: 'badge-hot', top: 'badge-top', new: 'badge-new' };
+  const labels = { hot: '🔥 HOT', top: '⭐ TOP', new: '✨ NEW' };
+  return `<span class="badge ${map[badge]}">${labels[badge]}</span>`;
+}
+ 
+function renderApps(list) {
+  const grid = document.getElementById('appsGrid');
+  const noRes = document.getElementById('noResults');
+  const count = document.getElementById('countBadge');
+ 
+  if (list.length === 0) {
+    grid.innerHTML = '';
+    noRes.style.display = 'block';
+    count.textContent = '0 résultats';
+    return;
+  }
+  noRes.style.display = 'none';
+  count.textContent = list.length + ' app' + (list.length > 1 ? 's' : '');
+ 
+  grid.innerHTML = list.map(app => `
+    <div class="app-card" data-cat="${app.category}">
+      <img class="app-icon" src="${app.icon}" alt="${app.name}" onerror="this.src='https://placehold.co/76x76/161928/00e5ff?text=${encodeURIComponent(app.name.charAt(0))}'">
+      <div class="app-name">${app.name}${getBadgeHTML(app.badge)}</div>
+      <div class="app-category">${getCatLabel(app.category)}</div>
+      <div class="app-rating">${'★'.repeat(Math.round(app.rating))}${'☆'.repeat(5-Math.round(app.rating))} ${app.rating}</div>
+      <div class="app-size">💾 ${app.size}</div>
+      <button class="btn-dl ${getBtnClass()}" onclick="downloadApp('${app.android}','${app.ios}','${app.pc}','${app.name}')">
+        ⬇ ${getStoreName()}
+      </button>
+    </div>
+  `).join('');
+}
+ 
+function getCatLabel(cat) {
+  const map = { social: '💬 Social', jeu: '🎮 Jeu', video: '▶️ Vidéo', musique: '🎵 Musique', utilitaire: '🔧 Utilitaire', education: '📚 Éducation' };
+  return map[cat] || cat;
+}
+ 
+function downloadApp(android, ios, pc, name) {
+  const links = { android, ios, pc };
+  const url = links[DEVICE] || android;
+  showToast('Redirection vers le store pour ' + name + '...');
+  setTimeout(() => { window.open(url, '_blank'); }, 400);
+}
+ 
+function filterApps() {
+  currentSearch = document.getElementById('searchInput').value.toLowerCase().trim();
+  applyFilters();
+}
+ 
+function filterCat(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+ 
+function applyFilters() {
+  let list = APPS;
+  if (currentCat !== 'all') list = list.filter(a => a.category === currentCat);
+  if (currentSearch) list = list.filter(a => a.name.toLowerCase().includes(currentSearch));
+  renderApps(list);
+}
+ 
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+ 
+// SCROLL TOP BUTTON
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('scrollTop');
+  btn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+});
+ 
+// INIT
+renderApps(APPS);
+</script>
+</body>
+</html>
